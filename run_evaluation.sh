@@ -1,6 +1,6 @@
 #/bin/bash
 
-DIR_GT=/home/hcchou/Project/tools/GT
+DIR_GT=/home/hcchou/Project/evaluation_tool/GT
 SEQUENCE=FLY070
 # 設置對齊的比對關鍵數列
 ALIGN_VAR='IMU_ATTI(0):Longitude,IMU_ATTI(0):Latitude,osd_data:relativeHeight'

@@ -90,7 +90,6 @@ class Evaluation:
                 ind_gt_ = ind_gt + 1
                 if ind_gt_ >= len(trj_gt):
                     self.gt_interp_trj_with_timestamp = np.delete(self.gt_interp_trj_with_timestamp, ind_es, 0)
-                    last_ind_gt = ind_gt
                     print('Gt trajectory doesnt fully cover estimated trajectory.')
                     return
                 elif trj_gt[ind_gt, 0] <= trj_es[ind_es, 0] < trj_gt[ind_gt + 1, 0]:
