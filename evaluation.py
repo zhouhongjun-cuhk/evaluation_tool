@@ -42,7 +42,7 @@ class Trajectory:
         # The timestamp is reorganized according to first frame.
         self.gt_trj_with_timestamp[:, 0] = self.gt_trj_with_timestamp[:, 0] - self.gt_trj_with_timestamp[0, 0]
         for ind in range(len(self.gt_trj_with_timestamp)):
-            x, y = self.convert_lon_lat_2_x_y(self.gt_trj_with_timestamp[ind, 1], self.gt_trj_with_timestamp[ind, 2])
+            x, y, z = self.convert_lon_lat_2_x_y(self.gt_trj_with_timestamp[ind, 1], self.gt_trj_with_timestamp[ind, 2])
             self.gt_trj_with_timestamp[ind, 1:] = [x, y]
 
     def get_est_trj_with_timestamp(self):
@@ -56,26 +56,17 @@ class Trajectory:
             self.es_trj_with_timestamp[ind, 1] = dx * math.cos(theta) - dy * math.sin(theta) + self.es_trj_with_timestamp[0, 1]
             self.es_trj_with_timestamp[ind, 2] = dx * math.sin(theta) + dy * math.cos(theta) + self.es_trj_with_timestamp[0, 2]
 
-    def convert_lon_lat_2_x_y(self, longitude, latitude):
-        longitude = longitude * math.pi / 180.0
-        latitude = latitude * math.pi / 180.0
-        radius = 6378137.0
-        distance = 6356752.3142
-        base = 30.0 * math.pi / 180.0
-        radius_square = math.pow(radius, 2.0)
-        distance_square = math.pow(distance, 2.0)
-        e = math.sqrt(1.0 - distance_square / radius_square)
-        e2 = math.sqrt(radius_square / distance_square - 1.0)
-        cosb0 = math.cos(base)
-        N = (radius_square / distance) / math.sqrt(1.0 + math.pow(e2, 2.0) * pow(cosb0, 2.0))
-        K = N * cosb0
-        sinb = math.sin(latitude)
-        tanv = math.tan(math.pi / 4.0 + latitude / 2.0)
-        E2 = math.pow((1.0 - e * sinb) / (1.0 + e * sinb), e / 2)
-        xx = tanv * E2
-        xc = K * math.log(xx)
-        yc = K * longitude
-        return xc, yc
+    def convert_lon_lat_2_x_y(self, longitude, latitude, altitude=0.0):
+        # WGS-84 semi-major axis
+        a = 6378137.0
+        # WGS-84 first eccentricity squared
+        e2 = 6.6943799901377997e-3
+        n = a / math.sqrt(1.0 - e2 * math.sin(latitude) * math.sin(latitude))
+        x = (n + altitude) * math.cos(latitude) * math.cos(longitude)
+        y = (n + altitude) * math.cos(latitude) * math.sin(longitude)
+        z = (n * (1.0 - e2) + altitude) * math.sin(latitude)
+        # x, y, z are in meter
+        return x, y, z
 
 class Evaluation:
     def __init__(self):
