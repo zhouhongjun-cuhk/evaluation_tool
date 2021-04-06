@@ -70,24 +70,25 @@ class Evaluation:
         self.gt_interp_trj_with_timestamp = np.zeros(shape=(len(trj_es), 3), dtype='float')
         last_ind_gt = 0
         for ind_es in range(len(trj_es)):
-            for ind_gt in range(last_ind_gt, len(trj_gt)):
-                # timestamp handling.
-                if trj_es[ind_es, 0] >= trj_gt[-1, 0]:
-                    self.gt_interp_trj_with_timestamp[ind_es] = trj_gt[-1, :]
-                    print('The timestamp of estimated trj. is longer than ground-truth trj. Use last ground-truth position.')
-                    break
-                elif trj_es[ind_es, 0] < trj_gt[0, 0]:
-                    self.gt_interp_trj_with_timestamp[ind_es] = trj_gt[0, :]
-                    print('The timestamp of estimated trj. is shorter than ground-truth trj. Use initial ground-truth position')
-                    break
-                # Find interpolation timestamp.
-                if trj_gt[ind_gt, 0] <= trj_es[ind_es, 0] < trj_gt[ind_gt + 1, 0]:
-                    r = (trj_es[ind_es, 0] - trj_gt[ind_gt, 0]) / (trj_gt[ind_gt + 1, 0] - trj_gt[ind_gt, 0])
-                    self.gt_interp_trj_with_timestamp[ind_es] = [trj_es[ind_es, 0], \
-                                                                 trj_gt[ind_gt, 1] + (trj_gt[ind_gt + 1, 1] - trj_gt[ind_gt, 1]) * r, \
-                                                                 trj_gt[ind_gt, 2] + (trj_gt[ind_gt + 1, 2] - trj_gt[ind_gt, 2]) * r]
-                    last_ind_gt = ind_gt
-                    break
+            # timestamp handling.
+            if trj_es[ind_es, 0] >= trj_gt[-1, 0]:
+                self.gt_interp_trj_with_timestamp[ind_es] = trj_gt[-1, :]
+                print('The timestamp of estimated trj. is longer than ground-truth trj. Use last ground-truth position.')
+                break
+            elif trj_es[ind_es, 0] < trj_gt[0, 0]:
+                self.gt_interp_trj_with_timestamp[ind_es] = trj_gt[0, :]
+                print('The timestamp of estimated trj. is shorter than ground-truth trj. Use initial ground-truth position')
+                break
+            else:
+                for ind_gt in range(last_ind_gt, len(trj_gt)):
+                    # Find interpolation timestamp.
+                    if trj_gt[ind_gt, 0] <= trj_es[ind_es, 0] < trj_gt[ind_gt + 1, 0]:
+                        r = (trj_es[ind_es, 0] - trj_gt[ind_gt, 0]) / (trj_gt[ind_gt + 1, 0] - trj_gt[ind_gt, 0])
+                        self.gt_interp_trj_with_timestamp[ind_es] = [trj_es[ind_es, 0], \
+                                                                     trj_gt[ind_gt, 1] + (trj_gt[ind_gt + 1, 1] - trj_gt[ind_gt, 1]) * r, \
+                                                                     trj_gt[ind_gt, 2] + (trj_gt[ind_gt + 1, 2] - trj_gt[ind_gt, 2]) * r]
+                        last_ind_gt = ind_gt
+                        break
 
     def calculate_rmse(self, trj_interp_gt, trj_es):
         if len(trj_interp_gt) != len(trj_es):
@@ -148,5 +149,3 @@ if __name__ == '__main__':
     plt.ylabel('y(m)')
     plt.grid(True)
     plt.show()
-
-
