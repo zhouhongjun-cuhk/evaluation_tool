@@ -78,12 +78,17 @@ class Evaluation:
         last_ind_gt = 0
         for ind_es in range(len(trj_es)):
             for ind_gt in range(last_ind_gt, len(trj_gt)):
-                ind_gt_ = ind_gt + 1
-                if ind_gt_ >= len(trj_gt):
-                    self.gt_interp_trj_with_timestamp = np.delete(self.gt_interp_trj_with_timestamp, ind_es, 0)
-                    print('Gt trajectory doesnt fully cover estimated trajectory.')
-                    return
-                elif trj_gt[ind_gt, 0] <= trj_es[ind_es, 0] < trj_gt[ind_gt + 1, 0]:
+                # timestamp handling.
+                if trj_es[ind_es, 0] >= trj_gt[-1, 0]:
+                    self.gt_interp_trj_with_timestamp[ind_es] = trj_gt[-1, :]
+                    print('The timestamp of estimated trj. is longer than ground-truth trj. Use last ground-truth position.')
+                    break
+                elif trj_es[ind_es, 0] < trj_gt[0, 0]:
+                    self.gt_interp_trj_with_timestamp[ind_es] = trj_gt[0, :]
+                    print('The timestamp of estimated trj. is shorter than ground-truth trj. Use initial ground-truth position')
+                    break
+                # Find interpolation timestamp.
+                if trj_gt[ind_gt, 0] <= trj_es[ind_es, 0] < trj_gt[ind_gt + 1, 0]:
                     r = (trj_es[ind_es, 0] - trj_gt[ind_gt, 0]) / (trj_gt[ind_gt + 1, 0] - trj_gt[ind_gt, 0])
                     self.gt_interp_trj_with_timestamp[ind_es] = [trj_es[ind_es, 0], \
                                                                  trj_gt[ind_gt, 1] + (trj_gt[ind_gt + 1, 1] - trj_gt[ind_gt, 1]) * r, \
@@ -93,8 +98,7 @@ class Evaluation:
 
     def calculate_rmse(self, trj_interp_gt, trj_es):
         if len(trj_interp_gt) != len(trj_es):
-            print('Estimated trajectory has different length with interpolated gt, modify estimated trajectory size.')
-            trj_es = trj_es[:len(trj_interp_gt), :]
+            print('Estimated trajectory has different length with interpolated gt, check estimated trajectory size.')
         rmse = np.sqrt(np.sum(np.power(trj_es[:, 1:] - trj_interp_gt[:, 1:], 2)) / len(trj_interp_gt))
         return rmse
 
