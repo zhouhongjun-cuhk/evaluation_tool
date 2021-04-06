@@ -45,16 +45,9 @@ class Trajectory:
             x, y, z = self.convert_lon_lat_2_x_y(self.gt_trj_with_timestamp[ind, 1], self.gt_trj_with_timestamp[ind, 2])
             self.gt_trj_with_timestamp[ind, 1:] = [x, y]
 
-    def get_est_trj_with_timestamp(self):
-        # TODO: import correct dataset.
-        self.es_trj_with_timestamp = self.gt_trj_with_timestamp.copy()
-        # Rotate trajectory.
-        theta = 30.0 * math.pi / 180.0
-        for ind in range(len(self.es_trj_with_timestamp)):
-            dx = self.es_trj_with_timestamp[ind, 1] - self.es_trj_with_timestamp[0, 1]
-            dy = self.es_trj_with_timestamp[ind, 2] - self.es_trj_with_timestamp[0, 2]
-            self.es_trj_with_timestamp[ind, 1] = dx * math.cos(theta) - dy * math.sin(theta) + self.es_trj_with_timestamp[0, 1]
-            self.es_trj_with_timestamp[ind, 2] = dx * math.sin(theta) + dy * math.cos(theta) + self.es_trj_with_timestamp[0, 2]
+    def get_est_trj_with_timestamp(self, directory_est_tum):
+        # Take first column timestamp, x and y only.
+        self.es_trj_with_timestamp =  np.genfromtxt(directory_est_tum, delimiter=' ')[:, :3]
 
     def convert_lon_lat_2_x_y(self, longitude, latitude, altitude=0.0):
         # WGS-84 semi-major axis
@@ -114,6 +107,8 @@ if __name__ == '__main__':
 
     # Init directory_gt_csv.
     directory_gt_csv = os.path.join(args.directory_to_gt, args.sequence) + '.csv'
+    # Init directory_es_tum.
+    directory_es_tum = os.path.join(args.directory_to_gt, args.sequence) + '_EST'
     # Init align_var, gt_var.
     align_var = args.align_var.split(',')
     gt_var = args.gt_var.split(',')
@@ -131,8 +126,9 @@ if __name__ == '__main__':
     trj.find_first_frame(table_align, align_val)
     # Get ground truth based on x-y coordinate.
     trj.get_gt_trj_with_timestamp(table_rtk)
-    # Get estimated trajectory based on x-y coordinate.
-    trj.get_est_trj_with_timestamp()
+    # Get estimated trajectory which is based on x-y coordinate.
+    # tum format: https://github.com/MichaelGrupp/evo/wiki/Formats#tum---tum-rgb-d-dataset-trajectory-format
+    trj.get_est_trj_with_timestamp(directory_es_tum)
 
     # Evaluation
     eval = Evaluation()
