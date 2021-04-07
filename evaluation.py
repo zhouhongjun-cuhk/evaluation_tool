@@ -19,6 +19,7 @@ class Trajectory:
         self.index_first_frame = -1
         self.gt_rtk_with_timestamp = []
         self.gt_trj_with_timestamp = []
+        self.gt_interp_trj_with_timestamp = []
         self.es_trj_with_timestamp = []
 
     def find_first_frame(self, table, val, begin=0):
@@ -49,24 +50,6 @@ class Trajectory:
         # Take first three column, including timestamp, x and y only.
         self.es_trj_with_timestamp =  np.genfromtxt(directory_est_tum, delimiter=' ')[:, :3]
 
-    def convert_lon_lat_2_x_y(self, longitude, latitude, altitude=0.0):
-        longitude = longitude * math.pi / 180.0
-        latitude = latitude * math.pi / 180.0
-        # WGS-84 semi-major axis
-        a = 6378137.0
-        # WGS-84 first eccentricity squared
-        e2 = 6.6943799901377997e-3
-        n = a / math.sqrt(1.0 - e2 * math.sin(latitude) * math.sin(latitude))
-        x = (n + altitude) * math.cos(latitude) * math.cos(longitude)
-        y = (n + altitude) * math.cos(latitude) * math.sin(longitude)
-        z = (n * (1.0 - e2) + altitude) * math.sin(latitude)
-        # x, y, z are in meter
-        return x, y, z
-
-class Evaluation:
-    def __init__(self):
-        self.gt_interp_trj_with_timestamp = []
-
     # The interpolation is based on the timestamp of estimated trajectory, because the frequency of gt is higher than es.
     def interp_gt_trj_with_timestamp(self, trj_gt, trj_es):
         self.gt_interp_trj_with_timestamp = np.zeros(shape=(len(trj_es), 3), dtype='float')
@@ -92,13 +75,30 @@ class Evaluation:
                         last_ind_gt = ind_gt
                         break
 
-    def calculate_rmse(self, trj_interp_gt, trj_es):
+    def convert_lon_lat_2_x_y(self, longitude, latitude, altitude=0.0):
+        longitude = longitude * math.pi / 180.0
+        latitude = latitude * math.pi / 180.0
+        # WGS-84 semi-major axis
+        a = 6378137.0
+        # WGS-84 first eccentricity squared
+        e2 = 6.6943799901377997e-3
+        n = a / math.sqrt(1.0 - e2 * math.sin(latitude) * math.sin(latitude))
+        x = (n + altitude) * math.cos(latitude) * math.cos(longitude)
+        y = (n + altitude) * math.cos(latitude) * math.sin(longitude)
+        z = (n * (1.0 - e2) + altitude) * math.sin(latitude)
+        # x, y, z are in meter
+        return x, y, z
+
+class Evaluation:
+    def __init__(self):
+        self.dist_traveled = 0.0
+        self.rmse = 0.0
+
+    def statistic(self, trj_interp_gt, trj_es):
         if len(trj_interp_gt) != len(trj_es):
             print('Estimated trajectory has different length with interpolated gt, check estimated trajectory size.')
-        dist = np.sum(np.linalg.norm(np.diff(trj_interp_gt, axis=0)[:, 1:], axis=1))
-        print('Distance traveled %.5f (m)' % dist)
-        rmse = np.sqrt(np.sum(np.power(trj_es[:, 1:] - trj_interp_gt[:, 1:], 2)) / len(trj_interp_gt))
-        return rmse
+        self.dist_traveled = np.sum(np.linalg.norm(np.diff(trj_interp_gt, axis=0)[:, 1:], axis=1))
+        self.rmse = np.sqrt(np.sum(np.power(trj_es[:, 1:] - trj_interp_gt[:, 1:], 2)) / len(trj_interp_gt))
 
 if __name__ == '__main__':
 
@@ -134,19 +134,21 @@ if __name__ == '__main__':
     # Get estimated trajectory which is based on x-y coordinate.
     # tum format: https://github.com/MichaelGrupp/evo/wiki/Formats#tum---tum-rgb-d-dataset-trajectory-format
     trj.get_est_trj_with_timestamp(directory_es_tum)
+    trj.interp_gt_trj_with_timestamp(trj.gt_trj_with_timestamp, trj.es_trj_with_timestamp)
 
     # Evaluation
     eval = Evaluation()
-    eval.interp_gt_trj_with_timestamp(trj.gt_trj_with_timestamp, trj.es_trj_with_timestamp)
-    rmse = eval.calculate_rmse(eval.gt_interp_trj_with_timestamp, trj.es_trj_with_timestamp)
-    print ('rmse is %.5f (m)' % rmse)
+    eval.statistic(trj.gt_interp_trj_with_timestamp, trj.es_trj_with_timestamp)
+    # Print messages.
+    print('Distance traveled: %.5f (m)' % eval.dist_traveled)
+    print('rmse is %.5f (m)' % eval.rmse)
 
     # Plot trajectory, gt and es.
     plt.plot(trj.gt_trj_with_timestamp[:, 1], trj.gt_trj_with_timestamp[:, 2], 'r-')
     plt.plot(trj.es_trj_with_timestamp[:, 1], trj.es_trj_with_timestamp[:, 2], 'b-')
     plt.plot(trj.gt_trj_with_timestamp[0, 1], trj.gt_trj_with_timestamp[0, 2], 'r^')
-    plt.plot(eval.gt_interp_trj_with_timestamp[0, 1], eval.gt_interp_trj_with_timestamp[0, 2], 'b^')
-    plt.plot(eval.gt_interp_trj_with_timestamp[:, 1], eval.gt_interp_trj_with_timestamp[:, 2], 'k--')
+    plt.plot(trj.gt_interp_trj_with_timestamp[0, 1], trj.gt_interp_trj_with_timestamp[0, 2], 'b^')
+    plt.plot(trj.gt_interp_trj_with_timestamp[:, 1], trj.gt_interp_trj_with_timestamp[:, 2], 'k--')
     plt.legend(['ground truth', 'estimate trj.', 'ground truth, begin', 'estimate trj. begin', 'interpolated ground truth'])
     # Add labels, grid, etcs.
     plt.xlabel('x(m)')
