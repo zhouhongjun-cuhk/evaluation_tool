@@ -50,7 +50,7 @@ class Trajectory:
         # Take first three column, including timestamp, x and y only.
         self.es_trj_with_timestamp =  np.genfromtxt(directory_est_tum, delimiter=' ')[:, :3]
 
-        # The interpolation is based on the timestamp of estimated trajectory, because the frequency of gt is higher than es.
+    # The interpolation is based on the timestamp of estimated trajectory, because the frequency of gt is higher than es.
     def interp_gt_trj_with_timestamp(self, trj_gt, trj_es):
         self.gt_interp_trj_with_timestamp = np.zeros(shape=(len(trj_es), 3), dtype='float')
         last_ind_gt = 0
@@ -89,6 +89,7 @@ class Evaluation:
     def __init__(self):
         self.dist_traveled = 0.0
         self.rmse = 0.0
+        self.errs = []
 
     def statistic(self, trj_interp_gt, trj_es):
         if len(trj_interp_gt) != len(trj_es):
@@ -144,9 +145,9 @@ if __name__ == '__main__':
     plt.plot(trj.es_trj_with_timestamp[:, 1], trj.es_trj_with_timestamp[:, 2], 'b-')
     plt.plot(trj.gt_trj_with_timestamp[0, 1], trj.gt_trj_with_timestamp[0, 2], 'r^')
     plt.plot(trj.gt_interp_trj_with_timestamp[0, 1], trj.gt_interp_trj_with_timestamp[0, 2], 'b^')
-    plt.plot(trj.gt_interp_trj_with_timestamp[:, 1], trj.gt_interp_trj_with_timestamp[:, 2], 'k--')
-    plt.legend(['ground truth', 'estimate trj.', 'ground truth, begin', 'estimate trj. begin', 'interpolated ground truth'])
-    # Add labels, grid, etcs.
+    plt.legend(['ground truth', 'estimate trj.', 'ground truth, begin', 'estimate trj. begin',])
+    # Add title, labels, grid, etcs.
+    plt.title(args.sequence)
     plt.xlabel('x(m)')
     plt.ylabel('y(m)')
     plt.grid(True)
