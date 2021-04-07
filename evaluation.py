@@ -74,11 +74,11 @@ class Evaluation:
             if trj_es[ind_es, 0] >= trj_gt[-1, 0]:
                 self.gt_interp_trj_with_timestamp[ind_es] = trj_gt[-1, :]
                 print('The timestamp of estimated trj. is longer than ground-truth trj. Use last ground-truth position.')
-                break
+                continue
             elif trj_es[ind_es, 0] < trj_gt[0, 0]:
                 self.gt_interp_trj_with_timestamp[ind_es] = trj_gt[0, :]
                 print('The timestamp of estimated trj. is shorter than ground-truth trj. Use initial ground-truth position')
-                break
+                continue
             else:
                 for ind_gt in range(last_ind_gt, len(trj_gt)):
                     # Find interpolation timestamp.
