@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 import argparse
 import matplotlib.pyplot as plt
-import math
 import numpy as np
 import os
 import pandas as pd
+from pygeotile.point import Point
 
 class Csv:
     def __init__(self, var_directory_csv):
@@ -50,7 +50,7 @@ class Trajectory:
         # Take first three column, including timestamp, x and y only.
         self.es_trj_with_timestamp =  np.genfromtxt(directory_est_tum, delimiter=' ')[:, :3]
 
-    # The interpolation is based on the timestamp of estimated trajectory, because the frequency of gt is higher than es.
+        # The interpolation is based on the timestamp of estimated trajectory, because the frequency of gt is higher than es.
     def interp_gt_trj_with_timestamp(self, trj_gt, trj_es):
         self.gt_interp_trj_with_timestamp = np.zeros(shape=(len(trj_es), 3), dtype='float')
         last_ind_gt = 0
@@ -76,18 +76,8 @@ class Trajectory:
                         break
 
     def convert_lon_lat_2_x_y(self, longitude, latitude, altitude=0.0):
-        longitude = longitude * math.pi / 180.0
-        latitude = latitude * math.pi / 180.0
-        # WGS-84 semi-major axis
-        a = 6378137.0
-        # WGS-84 first eccentricity squared
-        e2 = 6.6943799901377997e-3
-        n = a / math.sqrt(1.0 - e2 * math.sin(latitude) * math.sin(latitude))
-        x = (n + altitude) * math.cos(latitude) * math.cos(longitude)
-        y = (n + altitude) * math.cos(latitude) * math.sin(longitude)
-        z = (n * (1.0 - e2) + altitude) * math.sin(latitude)
-        # x, y, z are in meter
-        return x, y, z
+        point = Point.from_latitude_longitude(latitude, longitude)
+        return point.meters[0], point.meters[1], 0.0
 
 class Evaluation:
     def __init__(self):
