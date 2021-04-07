@@ -95,7 +95,8 @@ class Evaluation:
     def calculate_rmse(self, trj_interp_gt, trj_es):
         if len(trj_interp_gt) != len(trj_es):
             print('Estimated trajectory has different length with interpolated gt, check estimated trajectory size.')
-        distance = np.sum(np.sqrt(np.sum(np.power(np.diff(trj_interp_gt, axis=0)[:, 1:], 2), axis=1)))
+        dist = np.sum(np.linalg.norm(np.diff(trj_interp_gt, axis=0)[:, 1:], axis=1))
+        print('Distance traveled %.5f (m)' % dist)
         rmse = np.sqrt(np.sum(np.power(trj_es[:, 1:] - trj_interp_gt[:, 1:], 2)) / len(trj_interp_gt))
         return rmse
 
