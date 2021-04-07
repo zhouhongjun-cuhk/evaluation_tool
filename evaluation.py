@@ -77,6 +77,12 @@ class Trajectory:
 
     def convert_lon_lat_2_x_y(self, longitude, latitude, altitude=0.0):
         point = Point.from_latitude_longitude(latitude, longitude)
+        # The source code of from_latitude_longitude method.
+        # EARTH_RADIUS = 6378137.0
+        # ORIGIN_SHIFT = 2.0 * math.pi * EARTH_RADIUS / 2.0
+        # meter_x = longitude * ORIGIN_SHIFT / 180.0
+        # meter_y = math.log(math.tan((90.0 + latitude) * math.pi / 360.0)) / (math.pi / 180.0)
+        # meter_y = meter_y * ORIGIN_SHIFT / 180.0
         return point.meters[0], point.meters[1], 0.0
 
 class Evaluation:
