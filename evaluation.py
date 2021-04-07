@@ -46,10 +46,12 @@ class Trajectory:
             self.gt_trj_with_timestamp[ind, 1:] = [x, y]
 
     def get_est_trj_with_timestamp(self, directory_est_tum):
-        # Take first column timestamp, x and y only.
+        # Take first three column, including timestamp, x and y only.
         self.es_trj_with_timestamp =  np.genfromtxt(directory_est_tum, delimiter=' ')[:, :3]
 
     def convert_lon_lat_2_x_y(self, longitude, latitude, altitude=0.0):
+        longitude = longitude * math.pi / 180.0
+        latitude = latitude * math.pi / 180.0
         # WGS-84 semi-major axis
         a = 6378137.0
         # WGS-84 first eccentricity squared
@@ -93,6 +95,7 @@ class Evaluation:
     def calculate_rmse(self, trj_interp_gt, trj_es):
         if len(trj_interp_gt) != len(trj_es):
             print('Estimated trajectory has different length with interpolated gt, check estimated trajectory size.')
+        distance = np.sum(np.sqrt(np.sum(np.power(np.diff(trj_interp_gt, axis=0)[:, 1:], 2), axis=1)))
         rmse = np.sqrt(np.sum(np.power(trj_es[:, 1:] - trj_interp_gt[:, 1:], 2)) / len(trj_interp_gt))
         return rmse
 
