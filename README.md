@@ -1,10 +1,14 @@
-# evaluation_tool repo
+# evaluation_tool
 
-1. Dependencies.  
-1.1. pandas  
-$ pip install pandas  
-1.2. pyGeoTile, see https://github.com/geometalab/pyGeoTile.  
-$ pip install pip install  
+### I. Dependencies
+#### 1.1. pandas  
+`$ pip install pandas  `
+#### 1.2. pyGeoTile
+`$ pip install pip install  `
 
-2. Usage bash scrip.  
-$ bash run_evaluation.sh  
+-  reference
+https://github.com/geometalab/pyGeoTile
+
+### II. Usage
+#### 2.1. Run bash scrip
+`$ bash run_evaluation.sh  `
