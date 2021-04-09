@@ -141,10 +141,10 @@ if __name__ == '__main__':
     print('rmse is %.5f (m)' % eval.rmse)
 
     # Plot trajectory, gt and es.
-    plt.plot(trj.gt_trj_with_timestamp[:, 1], trj.gt_trj_with_timestamp[:, 2], 'r-')
+    plt.plot(trj.gt_interp_trj_with_timestamp[:, 1], trj.gt_interp_trj_with_timestamp[:, 2], 'r-')
     plt.plot(trj.es_trj_with_timestamp[:, 1], trj.es_trj_with_timestamp[:, 2], 'b-')
-    plt.plot(trj.gt_trj_with_timestamp[0, 1], trj.gt_trj_with_timestamp[0, 2], 'r^')
-    plt.plot(trj.gt_interp_trj_with_timestamp[0, 1], trj.gt_interp_trj_with_timestamp[0, 2], 'b^')
+    plt.plot(trj.gt_interp_trj_with_timestamp[0, 1], trj.gt_interp_trj_with_timestamp[0, 2], 'r^')
+    plt.plot(trj.es_trj_with_timestamp[0, 1], trj.es_trj_with_timestamp[0, 2], 'b^')
     plt.legend(['ground truth', 'estimate trj.', 'ground truth, begin', 'estimate trj. begin',])
     # Add title, labels, grid, etcs.
     plt.title(args.sequence)
