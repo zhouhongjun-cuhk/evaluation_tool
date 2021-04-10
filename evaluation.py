@@ -132,20 +132,21 @@ if __name__ == '__main__':
     # tum format: https://github.com/MichaelGrupp/evo/wiki/Formats#tum---tum-rgb-d-dataset-trajectory-format
     trj.get_est_trj_with_timestamp(directory_es_tum)
     trj.interp_gt_trj_with_timestamp(trj.gt_trj_with_timestamp, trj.es_trj_with_timestamp)
+    # Translate estimated trj. according to the first frame of gt.
+    trj.es_trj_with_timestamp[:, 1:] = trj.es_trj_with_timestamp[:, 1:] - trj.es_trj_with_timestamp[0, 1:] + trj.gt_interp_trj_with_timestamp[0, 1:]
 
     # Evaluation
     eval = Evaluation()
     eval.statistic(trj.gt_interp_trj_with_timestamp, trj.es_trj_with_timestamp)
     # Print messages.
     print('Distance traveled: %.5f (m)' % eval.dist_traveled)
-    print('rmse is %.5f (m)' % eval.rmse)
+    print('RMSE is %.5f (m)' % eval.rmse)
 
     # Plot trajectory, gt and es.
     plt.plot(trj.gt_interp_trj_with_timestamp[:, 1], trj.gt_interp_trj_with_timestamp[:, 2], 'r-')
     plt.plot(trj.es_trj_with_timestamp[:, 1], trj.es_trj_with_timestamp[:, 2], 'b-')
-    plt.plot(trj.gt_interp_trj_with_timestamp[0, 1], trj.gt_interp_trj_with_timestamp[0, 2], 'r^')
-    plt.plot(trj.es_trj_with_timestamp[0, 1], trj.es_trj_with_timestamp[0, 2], 'b^')
-    plt.legend(['ground truth', 'estimate trj.', 'ground truth, begin', 'estimate trj. begin',])
+    plt.plot(trj.gt_interp_trj_with_timestamp[0, 1], trj.gt_interp_trj_with_timestamp[0, 2], 'k^')
+    plt.legend(['Ground truth', 'Estimated trj.', 'First frame'])
     # Add title, labels, grid, etcs.
     plt.title(args.sequence)
     plt.xlabel('x(m)')
